@@ -15,6 +15,7 @@ yarn-error.log
 !var/sessions/.gitkeep
 /public/build/fonts/glyphicons-*
 /public/build/images/glyphicons-*
+/public/build/
 
 ###> symfony/framework-bundle ###
 /.env
