@@ -12,6 +12,7 @@
         "doctrine/orm": "^2.5.11",
         "erusev/parsedown": "^1.6",
         "ezyang/htmlpurifier": "^4.9",
+        "php-amqplib/rabbitmq-bundle": "^1.10@dev",
         "sensio/framework-extra-bundle": "^5.0",
         "sensiolabs/security-checker": "dev-master",
         "symfony/asset": "4.2.0-beta1",
