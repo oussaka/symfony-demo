@@ -1,15 +1,46 @@
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+parameters:
+    env(RABBITMQ_VHOST): 'symfony-demo'
+    env(RABBITMQ_URL): 'amqp://test:test@localhost:5672'
+
+    rabbitmq_host: '%env(RABBITMQ_HOST)%'
+    env(RABBITMQ_HOST): localhost
+    rabbitmq_user: '%env(RABBITMQ_USER)%'
+    env(RABBITMQ_USER): test
+    rabbitmq_password: '%env(RABBITMQ_PASSWORD)%'
+    env(RABBITMQ_PASSWORD): test
+
 old_sound_rabbit_mq:
     connections:
         default:
-            url: '%env(RABBITMQ_URL)%'
-#    producers:
-#        # use 'old_sound_rabbit_mq.task_producer' service to send data.
-#        task:
-#            connection:       default
-#            exchange_options: { name: 'task', type: direct }
-#    consumers:
-#        task:
-#            connection:       default
-#            exchange_options: { name: 'task', type: direct }
-#            queue_options:    { name: 'task'}
-#            callback:         App\Consumer\TaskConsumer
+            host:     '%rabbitmq_host%'
+            port:     5672
+            user:     '%rabbitmq_user%'
+            password: '%rabbitmq_password%'
+            vhost:    '%env(RABBITMQ_VHOST)%'
+            lazy:     false
+            connection_timeout: 3
+            read_write_timeout: 3
+
+            # requires php-amqplib v2.4.1+ and PHP5.4+
+            keepalive: false
+
+            # requires php-amqplib v2.4.1+
+            heartbeat: 0
+
+            #requires php_sockets.dll
+            use_socket: false # default false
+    producers:
+        emailing:
+            connection:       default
+            exchange_options: {name: 'emails', type: direct}
+            queue_options:    {name: 'emails'}
+            service_alias:    my_emailing_service # no alias by default
+
+    consumers:
+        emailing:
+            connection:       default
+            exchange_options: {name: 'emails', type: direct}
+            queue_options:    {name: 'emails'}
+            callback:         app.email_service

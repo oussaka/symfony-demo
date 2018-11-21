@@ -6,11 +6,18 @@ parameters:
     app_locales: en|fr|de|es|cs|nl|ru|uk|ro|pt_BR|pl|it|ja|id|ca|sl|hr|zh_CN|bg|tr
     app.notifications.email_sender: anonymous@example.com
 
+    mailer_transport: smtp
+    mailer_host: 127.0.0.1
+    mailer_port: 1025
+    mailer_user: null
+    mailer_password: null
+
 services:
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        public: true
         bind:               # defines the scalar arguments once and apply them to any service defined/created in this file
             $locales: '%app_locales%'
             $defaultLocale: '%locale%'
@@ -31,4 +38,8 @@ services:
     # when the service definition only contains arguments, you can omit the
     # 'arguments' key and define the arguments just below the service class
     App\EventSubscriber\CommentNotificationSubscriber:
+        $producer: '@old_sound_rabbit_mq.emailing_producer'
         $sender: '%app.notifications.email_sender%'
+
+    app.email_service:
+        class: App\Consumer\EmailService

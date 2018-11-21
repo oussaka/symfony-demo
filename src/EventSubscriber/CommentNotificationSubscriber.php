@@ -13,6 +13,7 @@ namespace App\EventSubscriber;
 
 use App\Entity\Comment;
 use App\Events;
+use OldSound\RabbitMqBundle\RabbitMq\ProducerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -29,13 +30,15 @@ class CommentNotificationSubscriber implements EventSubscriberInterface
     private $translator;
     private $urlGenerator;
     private $sender;
+    private $producer;
 
-    public function __construct(\Swift_Mailer $mailer, UrlGeneratorInterface $urlGenerator, TranslatorInterface $translator, $sender)
+    public function __construct(\Swift_Mailer $mailer, UrlGeneratorInterface $urlGenerator, TranslatorInterface $translator, $sender, ProducerInterface $producer)
     {
         $this->mailer = $mailer;
         $this->urlGenerator = $urlGenerator;
         $this->translator = $translator;
         $this->sender = $sender;
+        $this->producer = $producer;
     }
 
     public static function getSubscribedEvents(): array
@@ -72,10 +75,13 @@ class CommentNotificationSubscriber implements EventSubscriberInterface
             ->setBody($body, 'text/html')
         ;
 
+        $this->producer->publish(serialize($message));
+
+
         // In config/packages/dev/swiftmailer.yaml the 'disable_delivery' option is set to 'true'.
         // That's why in the development environment you won't actually receive any email.
         // However, you can inspect the contents of those unsent emails using the debug toolbar.
         // See https://symfony.com/doc/current/email/dev_environment.html#viewing-from-the-web-debug-toolbar
-        $this->mailer->send($message);
+        // $this->mailer->send($message);
     }
 }
