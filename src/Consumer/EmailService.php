@@ -9,7 +9,9 @@
 namespace App\Consumer;
 
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
+use OldSound\RabbitMqBundle\RabbitMq\ProducerInterface;
 use PhpAmqpLib\Message\AMQPMessage;
+use Psr\Log\LoggerInterface;
 
 class EmailService implements ConsumerInterface
 {
@@ -18,9 +20,14 @@ class EmailService implements ConsumerInterface
      */
     private $mailer;
 
-    public function __construct(\Swift_Mailer $mailer)
+    private $delayedProducer;
+
+    private $logger;
+
+    public function __construct(\Swift_Mailer $mailer, LoggerInterface $logger)
     {
         $this->mailer = $mailer;
+        $this->logger = $logger;
     }
 
     /**
@@ -35,6 +42,12 @@ class EmailService implements ConsumerInterface
     public function processMessage(AMQPMessage $msg)
     {
         $message = unserialize($msg->getBody());
-        $this->mailer->send($message);
+        if (false == $this->mailer->send($message)) {
+            $this->logger->error('Corrupt message goes into Dead Letter Exchange.');
+
+            return ConsumerInterface::MSG_REJECT;
+        }
+
+        $this->logger->info('Message consumed.');
     }
 }

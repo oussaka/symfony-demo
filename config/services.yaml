@@ -17,7 +17,6 @@ services:
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
-        public: true
         bind:               # defines the scalar arguments once and apply them to any service defined/created in this file
             $locales: '%app_locales%'
             $defaultLocale: '%locale%'
@@ -40,6 +39,3 @@ services:
     App\EventSubscriber\CommentNotificationSubscriber:
         $producer: '@old_sound_rabbit_mq.emailing_producer'
         $sender: '%app.notifications.email_sender%'
-
-    app.email_service:
-        class: App\Consumer\EmailService

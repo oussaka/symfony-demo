@@ -77,7 +77,6 @@ class CommentNotificationSubscriber implements EventSubscriberInterface
 
         $this->producer->publish(serialize($message));
 
-
         // In config/packages/dev/swiftmailer.yaml the 'disable_delivery' option is set to 'true'.
         // That's why in the development environment you won't actually receive any email.
         // However, you can inspect the contents of those unsent emails using the debug toolbar.

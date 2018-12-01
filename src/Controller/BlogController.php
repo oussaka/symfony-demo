@@ -1,5 +1,4 @@
 <?php
-
 /*
  * This file is part of the Symfony package.
  *
@@ -26,6 +25,7 @@ use Symfony\Component\EventDispatcher\GenericEvent;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use OldSound\RabbitMqBundle\RabbitMq\ProducerInterface;
 
 /**
  * Controller used to manage blog contents in the public part of the site.

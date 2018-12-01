@@ -34,13 +34,33 @@ old_sound_rabbit_mq:
     producers:
         emailing:
             connection:       default
-            exchange_options: {name: 'emails', type: direct}
-            queue_options:    {name: 'emails'}
-            service_alias:    my_emailing_service # no alias by default
+            exchange_options: {name: emails_ex, type: fanout}
+
+        delayed_send_email:
+            connection:       default
+            exchange_options: { name: 'notification.v1.send_email_delayed', type: direct }
+            queue_options:
+                name: 'notification.v1.send_email_delayed'
+                arguments:
+                    x-dead-letter-exchange: ['S', 'notification.v1.send_email']
+                    x-message-ttl:          ['I', '100000']
+                    x-ha-policy:            ['S', 'all']
 
     consumers:
         emailing:
             connection:       default
-            exchange_options: {name: 'emails', type: direct}
-            queue_options:    {name: 'emails'}
-            callback:         app.email_service
+            exchange_options: { name: emails_ex, type: fanout }
+            queue_options:
+                name: emails_qu
+                arguments:
+                    x-dead-letter-exchange:    ['S', 'emailing_send_dead_letter_ex']
+                    x-dead-letter-routing-key: ['S', 'emailing_send_dead_letter_qu']
+                    x-message-ttl:          ['I', '3600000']
+                    x-ha-policy:            ['S', 'all']
+            callback:         App\Consumer\EmailService
+
+        emailing_send_dead_letter:
+            connection:       default
+            exchange_options: { name: emailing_send_dead_letter_ex, type: fanout }
+            queue_options:    { name: emailing_send_dead_letter_qu }
+            callback:         App\Consumer\EmailDeadLetterConsumer
