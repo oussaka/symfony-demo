@@ -19,15 +19,14 @@ class EmailService implements ConsumerInterface
      * @var \Swift_Mailer
      */
     private $mailer;
-
-    private $delayedProducer;
-
     private $logger;
+    private $swiftTransport;
 
-    public function __construct(\Swift_Mailer $mailer, LoggerInterface $logger)
+    public function __construct(\Swift_Mailer $mailer, \Swift_Transport $swiftTransport, LoggerInterface $logger)
     {
         $this->mailer = $mailer;
         $this->logger = $logger;
+        $this->swiftTransport = $swiftTransport;
     }
 
     /**
@@ -42,12 +41,30 @@ class EmailService implements ConsumerInterface
     public function processMessage(AMQPMessage $msg)
     {
         $message = unserialize($msg->getBody());
-        if (false == $this->mailer->send($message)) {
+        $transport = $this->getTransport();
+
+        if (false == $transport->send($message)) {
             $this->logger->error('Corrupt message goes into Dead Letter Exchange.');
+            $transport->stop();
 
             return ConsumerInterface::MSG_REJECT;
         }
 
+        $transport->stop();
         $this->logger->info('Message consumed.');
+
+        return ConsumerInterface::MSG_ACK;
+    }
+
+    /** @return \Swift_Transport  */
+    protected function getTransport()
+    {
+        /** @var \Swift_Transport $swiftTransport */
+
+        if (!$this->swiftTransport->isStarted()) {
+            $this->swiftTransport->start();
+        }
+
+        return $this->swiftTransport;
     }
 }

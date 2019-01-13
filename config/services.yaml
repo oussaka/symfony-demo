@@ -39,3 +39,10 @@ services:
     App\EventSubscriber\CommentNotificationSubscriber:
         $producer: '@old_sound_rabbit_mq.emailing_producer'
         $sender: '%app.notifications.email_sender%'
+
+    swiftmailer.mailer.default.spool.rabbitmq:
+        class: App\Mailer\RabbitMqSpool
+        arguments:    ['@old_sound_rabbit_mq.mails_queue_producer', '@old_sound_rabbit_mq.mails_queue_consumer']
+#        arguments:
+#            - '@old_sound_rabbit_mq.mails_queue_producer'
+#            - '@old_sound_rabbit_mq.mails_queue_consumer'

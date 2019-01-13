@@ -18,7 +18,7 @@ old_sound_rabbit_mq:
             port:     5672
             user:     '%rabbitmq_user%'
             password: '%rabbitmq_password%'
-            vhost:    '%env(RABBITMQ_VHOST)%'
+            vhost:    'symfony-demo'
             lazy:     false
             connection_timeout: 3
             read_write_timeout: 3
@@ -32,6 +32,10 @@ old_sound_rabbit_mq:
             #requires php_sockets.dll
             use_socket: false # default false
     producers:
+        mails_queue:
+            connection:       default
+            exchange_options: {name: mails_spool_qu, type: direct}
+
         emailing:
             connection:       default
             exchange_options: {name: emails_ex, type: fanout}
@@ -47,6 +51,12 @@ old_sound_rabbit_mq:
                     x-ha-policy:            ['S', 'all']
 
     consumers:
+        mails_queue: &consumer_mails_queue
+            connection:       default
+            exchange_options: {name: mails_spool_qu, type: direct}
+            queue_options:    {name: mails_spool_qu}
+            callback:         App\Consumer\EmailService
+
         emailing:
             connection:       default
             exchange_options: { name: emails_ex, type: fanout }
