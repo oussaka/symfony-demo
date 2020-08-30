@@ -11,11 +11,24 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use function Symfony\Component\String\u;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 /**
+ * @ApiResource(
+ *     collectionOperations={"get"},
+ *     itemOperations={"get"},
+ *     normalizationContext={"groups"={"read"}},
+ *     denormalizationContext={"groups"={"write"}},
+ *     attributes={"order"={"publishedAt": "ASC"}},
+ *     paginationItemsPerPage=5
+ * )
+ * @ApiFilter(SearchFilter::class, properties={"post": "exact"})
  * @ORM\Entity
  * @ORM\Table(name="symfony_demo_comment")
  *
@@ -36,6 +49,7 @@ class Comment
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"read"})
      */
     private $id;
 
@@ -58,6 +72,7 @@ class Comment
      *     max=10000,
      *     maxMessage="comment.too_long"
      * )
+     * @Groups({"read", "write"})
      */
     private $content;
 
@@ -65,6 +80,7 @@ class Comment
      * @var \DateTime
      *
      * @ORM\Column(type="datetime")
+     * @Groups({"read"})
      */
     private $publishedAt;
 
@@ -73,6 +89,7 @@ class Comment
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\User")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"read"})
      */
     private $author;
 
