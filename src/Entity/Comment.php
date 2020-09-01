@@ -12,6 +12,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use App\Controller\PostCommentController;
 use Doctrine\ORM\Mapping as ORM;
 use function Symfony\Component\String\u;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -21,10 +22,25 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 
 /**
  * @ApiResource(
- *     collectionOperations={"get"},
- *     itemOperations={"get"},
- *     normalizationContext={"groups"={"read"}},
- *     denormalizationContext={"groups"={"write"}},
+ *     collectionOperations={
+ *         "get",
+ *         "post_comment"={
+ *             "method"="POST",
+ *             "path"="/comments",
+ *             "security"="is_granted('IS_AUTHENTICATED_FULLY')",
+ *             "controller"=PostCommentController::class
+ *         }
+ *     },
+ *     itemOperations={
+ *         "get"={
+ *             "normalization_context"={"groups"={"read", "read:details"}}
+ *         },
+ *         "put"={
+ *             "security"="is_granted('EDIT_COMMENT', object)"
+ *         }
+ *     },
+ *     normalizationContext={"groups"={"read", "read:details"}},
+ *     denormalizationContext={"groups"={"write", "read:details"}},
  *     attributes={"order"={"publishedAt": "ASC"}},
  *     paginationItemsPerPage=5
  * )
@@ -58,6 +74,7 @@ class Comment
      *
      * @ORM\ManyToOne(targetEntity="Post", inversedBy="comments")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"read:details"})
      */
     private $post;
 
